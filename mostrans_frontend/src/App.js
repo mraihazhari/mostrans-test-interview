@@ -8,11 +8,7 @@ function App() {
   return (
       <Router>
         <Routes>
-          <Route exact path="/list_characters" element={<ListCharacters />} />
-          <Route
-            path="*"
-            element = {<Navigate to="/list_characters" />}
-          />
+          <Route path="*" element={<ListCharacters />} />
         </Routes>
       </Router>
   );

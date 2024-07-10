@@ -14,11 +14,15 @@ CardMedia,
 Dialog,
 DialogTitle,
 DialogActions,
-DialogContent
+DialogContent,
+Select,
+MenuItem
 } from "@mui/material";
 import axios from "axios";
 import Navbar from "./components/navbar";
-import { getCharacter } from "./api/getCharacter";
+import { getCharacter} from "./api/getCharacter";
+import { getLocation } from "./api/getLocation";
+import { postLocation } from "./api/postLocation";
 
 
 function ListCharacters() {
@@ -28,7 +32,8 @@ function ListCharacters() {
     const [error, setError] = useState(null);
     const [detailCharacter, setDetailCharacter] = useState(false);
     const [idCharacter, setIdCharacter] = useState(null);
-
+    const [listLocation, setListLocation] = useState([]);
+    const [selectedLocation, setSelectedLocation] = useState(null);
     const DetailPage = () => {
         return(
             <Dialog open={detailCharacter} onClose={() => setDetailCharacter(false)}>
@@ -61,10 +66,27 @@ function ListCharacters() {
                                 <Typography variant="h5" color="text.secondary" component="div">
                                  Origin : {data[idCharacter]?.origin?.name}
                                 </Typography>
+                                <Typography variant="h5" color="text.secondary" component="div">
+                                 Pilih Lokasi :
+                                </Typography>
                                 </CardContent>
-                                <Box sx={{ display: 'flex', alignItems: 'center', pl: 1, pb: 1 }}>
-                                {/* icon button */}
-                                </Box>
+                                <Select
+                                 onChange={(e) => {
+                                    console.log(e.target.value);
+                                    setSelectedLocation(e.target.value);
+                                  }}
+                                sx={{
+                                    width: 200,
+                                    height: 40,
+                                    marginLeft: 2,
+                                    marginBottom: 2,
+                                }}>
+                                    {
+                                        listLocation?.map((location) => (
+                                           <MenuItem value={location.name}>{location.name}</MenuItem>
+                                        ))
+                                    }
+                                </Select>
                             </Box>
                             <CardMedia
                                 component="img"
@@ -77,7 +99,10 @@ function ListCharacters() {
                         </Card>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setDetailCharacter(false)}>Close</Button>
+                    <Button
+                    variant = 'contained'
+                    onClick={() => handlePublish()}>Assign Lokasi</Button>
+                    <Button onClick={() => handleClose()}>Close</Button>
                 </DialogActions>
             </Dialog>
         )
@@ -93,12 +118,35 @@ function ListCharacters() {
             setError(error);
             setLoading(false);
         });
+        getLocation()
+        .then((data) => {
+            setListLocation(data);
+            setLoading(false);
+        })
+        .catch((error) => {
+            setError(error);
+            setLoading(false);
+        });
     }, []);
 
     async function handleOpenDetail (id) {
         console.log(id);
         setIdCharacter(id);
         setDetailCharacter(true);
+    }
+
+    async function handlePublish(){
+        if(selectedLocation !== null){
+            console.log(selectedLocation);
+            console.log(data[idCharacter]);
+            postLocation(data[idCharacter], selectedLocation);
+            setDetailCharacter(false);
+        }
+    }
+
+    async function handleClose(){
+        setDetailCharacter(false);
+        setSelectedLocation(null);
     }
 
     return (
@@ -117,17 +165,6 @@ function ListCharacters() {
                 >
                 List Chracters
                 </Typography>
-                <Box
-                sx={{
-                    height: 30,
-                    width: 500,
-                    maxWidth: '75%',
-                    margin: 'auto',
-                }}
-                >
-                {/* send search event to function */}
-                <TextField fullWidth label="Search Character" id="searchkreator"/>
-                </Box>
             </Container>
             <Container maxWidth="md" component="main">
             <Grid container spacing={5} alignItems="flex-end">
